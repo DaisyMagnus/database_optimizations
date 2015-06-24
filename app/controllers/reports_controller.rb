@@ -1,14 +1,12 @@
 class ReportsController < ApplicationController
-  def all_data
-    @assembly = Assembly.find_by_name(params[:name])
-    @hits = []
-    @assembly.sequences.each do |s|
-      s.genes.each do |g|
-        g.hits.each do |h|
-          @hits << h
-        end
-      end
-    end
-    @hits.sort! {|a, b| b.percent_similarity <=> a.percent_similarity}
+   def all_data
+     @assembly = Assembly.find_by_name(params[:name])
+
+     @hits = Hit.where( subject_id: Gene.where( sequence_id: Sequence.where(
+         assembly_id: Assembly.where( name: params[:name] )))).order( :percent_similarity )
+   end
+
+   def send_email
+    Notifier.email(params[:address]).deliver_now
   end
 end
